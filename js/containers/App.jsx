@@ -110,6 +110,11 @@ export default class Layout extends React.Component {
 		event.preventDefault();
 		window.location.href = 'https://accounts.spotify.com/authorize?client_id=' + this.state.client_id + '&response_type=token&redirect_uri=' + this.state.redirect_uri + '&scope=' + this.state.scopes;
 	}
+	removeToken(event) {
+		event.preventDefault();
+		localStorage.removeItem('access_token');
+		window.location.href = '/';
+	}
 	render() {
 		let artists = 'Laddar...';
 		artists = this.state.artists.map((artist) => {
@@ -135,6 +140,11 @@ export default class Layout extends React.Component {
 			nextButton = <a href="#" onClick={(event) => this.nextPage(event)}>Nästa sida »</a>
 		}
 
+		let removeToken = null;
+		if (this.state.access_token) {
+			removeToken = <div><a href="#" onClick={(event) => this.removeToken(event)}>Ta bort token</a></div>;
+		}
+
 		return (
 			<div className="flex">
 				<div className="list">
@@ -142,6 +152,7 @@ export default class Layout extends React.Component {
 					{artists}
 					{nextButton}
 					{loginButton}
+					{removeToken}
 				</div>
 				<div className="current">
 					{currentArtist}

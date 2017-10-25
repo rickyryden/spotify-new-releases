@@ -21442,6 +21442,13 @@ var Layout = function (_React$Component) {
 			window.location.href = 'https://accounts.spotify.com/authorize?client_id=' + this.state.client_id + '&response_type=token&redirect_uri=' + this.state.redirect_uri + '&scope=' + this.state.scopes;
 		}
 	}, {
+		key: 'removeToken',
+		value: function removeToken(event) {
+			event.preventDefault();
+			localStorage.removeItem('access_token');
+			window.location.href = '/';
+		}
+	}, {
 		key: 'render',
 		value: function render() {
 			var _this5 = this;
@@ -21496,6 +21503,21 @@ var Layout = function (_React$Component) {
 				);
 			}
 
+			var removeToken = null;
+			if (this.state.access_token) {
+				removeToken = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+					'div',
+					null,
+					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+						'a',
+						{ href: '#', onClick: function onClick(event) {
+								return _this5.removeToken(event);
+							} },
+						'Ta bort token'
+					)
+				);
+			}
+
 			return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 				'div',
 				{ className: 'flex' },
@@ -21509,7 +21531,8 @@ var Layout = function (_React$Component) {
 					),
 					artists,
 					nextButton,
-					loginButton
+					loginButton,
+					removeToken
 				),
 				__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
