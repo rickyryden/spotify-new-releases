@@ -1,0 +1,67 @@
+@import "reset";
+
+body {
+	line-height: 1.5;
+	font-family: 'Poppins', sans-serif;
+	font-size: 16px;
+
+	a {
+		display: inline-block;
+		margin: 0 0 10px;
+		line-height: 1.2;
+		text-decoration: none;
+		border-bottom: 1px solid #ccc;
+		color: #333;
+	}
+}
+
+.flex {
+	display: flex;
+	flex-wrap: nowrap;
+}
+
+.list {
+	flex: 0 0 550px;
+	padding: 50px;
+	border-right: 2px solid #eee;
+
+	strong {
+		display: block;
+		font-size: 20px;
+		margin-bottom: 10px;
+	}
+}
+
+.current {
+	flex: 1;
+	padding: 50px;
+
+	h1 {
+		margin: 0 0 30px;
+		flex: 0 0 100%;
+		font-size: 30px;
+	}
+
+	.covers {
+		display: flex;
+		flex-wrap: wrap;
+
+		> div {
+			flex: 0 0 300px;
+			color: #ccc;
+			margin-right: 50px;
+
+			strong {
+				color: #000;
+				display: block;
+				font-size: 18px;
+				margin-top: 10px;
+			}
+
+			img {
+				display: block;
+				margin-top: 10px;
+			}
+		}
+	}
+}
