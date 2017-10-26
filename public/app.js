@@ -21309,7 +21309,8 @@ module.exports = getActiveElement;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_Album__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_Single__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_Cover__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_Single__ = __webpack_require__(38);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21317,6 +21318,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 
 
 
@@ -21332,10 +21334,10 @@ var Layout = function (_React$Component) {
 		var _this = _possibleConstructorReturn(this, (Layout.__proto__ || Object.getPrototypeOf(Layout)).call(this, props));
 
 		_this.state = {
-			album: null,
-			single: null,
+			loading: true,
+			albums: [],
+			singles: [],
 			artists: [],
-			allArtists: [],
 			after: null,
 			currentArtist: null,
 			access_token: null,
@@ -21349,24 +21351,12 @@ var Layout = function (_React$Component) {
 	_createClass(Layout, [{
 		key: 'componentWillMount',
 		value: function componentWillMount() {
-			var _this2 = this;
-
 			if (localStorage.getItem('access_token')) {
 				this.setState({
 					access_token: localStorage.getItem('access_token')
 				});
-
 				axios.defaults.headers.common.Authorization = 'Bearer ' + localStorage.getItem('access_token');
-
-				axios.get('me/following?limit=50&type=artist').then(function (response) {
-					_this2.setState({
-						artists: response.data.artists.items,
-						allArtists: _this2.state.allArtists.concat(response.data.artists.items),
-						after: response.data.artists.cursors.after
-					});
-				}).catch(function (error) {
-					console.log(error);
-				});
+				this.fetchArtists();
 			}
 
 			var hash = window.location.hash;
@@ -21378,61 +21368,54 @@ var Layout = function (_React$Component) {
 
 				if (access_token) {
 					localStorage.setItem('access_token', access_token);
-					axios.defaults.headers.common.Authorization = 'Bearer ' + access_token;
-
-					axios.get('me/following?type=artist').then(function (response) {
-						window.location.href = '/';
-					}).catch(function (error) {
-						console.log(error);
-					});
+					window.location.href = '/';
 				}
 			}
 		}
 	}, {
-		key: 'nextPage',
-		value: function nextPage(event) {
-			var _this3 = this;
+		key: 'fetchArtists',
+		value: function fetchArtists() {
+			var _this2 = this;
 
-			event.preventDefault();
+			var afterCursor = '';
 
-			axios.get('me/following?type=artist&limit=50&after=' + this.state.after).then(function (response) {
-				_this3.setState({
-					artists: response.data.artists.items,
-					allArtists: _this3.state.allArtists.concat(response.data.artists.items),
+			if (this.state.after) {
+				afterCursor = '&after=' + this.state.after;
+			}
+
+			axios.get('me/following?type=artist&limit=50' + afterCursor).then(function (response) {
+				_this2.setState({
+					artists: _this2.state.artists.concat(response.data.artists.items),
 					after: response.data.artists.cursors.after
 				});
+
+				// if (response.data.artists.cursors.after) {
+				// 	this.fetchArtists();
+				// } else {
+				_this2.fetchAlbums();
+				// }
 			}).catch(function (error) {
 				console.log(error);
 			});
 		}
 	}, {
-		key: 'getLatest',
-		value: function getLatest(event, artist) {
-			var _this4 = this;
+		key: 'fetchAlbums',
+		value: function fetchAlbums() {
+			var _this3 = this;
 
-			event.preventDefault();
-
-			var artistId = artist.id;
-			var artistName = artist.name;
-
-			this.setState({
-				currentArtist: artistName
-			});
-
-			axios.get('artists/' + artistId + '/albums?limit=1&album_type=album').then(function (response) {
-				_this4.setState({
-					album: response.data.items[0]
+			var fetchAlbum = function fetchAlbum(artist) {
+				axios.get('artists/' + artist.id + '/albums?limit=1&album_type=single').then(function (response) {
+					var albums = _this3.state.albums;
+					albums.push(response.data.items[0]);
+					_this3.setState({
+						albums: albums
+					});
+				}).catch(function (error) {
+					console.log(error);
 				});
-			}).catch(function (error) {
-				console.log(error);
-			});
-
-			axios.get('artists/' + artistId + '/albums?limit=1&album_type=single').then(function (response) {
-				_this4.setState({
-					single: response.data.items[0]
-				});
-			}).catch(function (error) {
-				console.log(error);
+			};
+			this.state.artists.map(function (artist) {
+				fetchAlbum(artist);
 			});
 		}
 	}, {
@@ -21451,31 +21434,16 @@ var Layout = function (_React$Component) {
 	}, {
 		key: 'render',
 		value: function render() {
-			var _this5 = this;
+			var _this4 = this;
 
 			var artists = 'Laddar...';
 			artists = this.state.artists.map(function (artist) {
 				return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
 					{ key: artist.id },
-					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-						'a',
-						{ href: '#', onClick: function onClick(event) {
-								return _this5.getLatest(event, artist);
-							} },
-						artist.name
-					)
+					artist.name
 				);
 			});
-
-			var currentArtist = null;
-			if (this.state.currentArtist) {
-				currentArtist = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-					'h1',
-					null,
-					this.state.currentArtist
-				);
-			}
 
 			var loginButton = null;
 			if (!this.state.access_token) {
@@ -21485,21 +21453,10 @@ var Layout = function (_React$Component) {
 					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 						'a',
 						{ href: '#', onClick: function onClick(event) {
-								return _this5.login(event);
+								return _this4.login(event);
 							} },
 						'Logga in'
 					)
-				);
-			}
-
-			var nextButton = null;
-			if (this.state.access_token) {
-				nextButton = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-					'a',
-					{ href: '#', onClick: function onClick(event) {
-							return _this5.nextPage(event);
-						} },
-					'N\xE4sta sida \xBB'
 				);
 			}
 
@@ -21508,14 +21465,27 @@ var Layout = function (_React$Component) {
 				removeToken = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
 					null,
+					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('br', null),
+					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('br', null),
 					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 						'a',
 						{ href: '#', onClick: function onClick(event) {
-								return _this5.removeToken(event);
+								return _this4.removeToken(event);
 							} },
 						'Ta bort token'
 					)
 				);
+			}
+
+			var albums = 'Laddar...';
+			if (this.state.albums.length === this.state.artists.length) {
+				albums = this.state.albums.map(function (album) {
+					if (!album) {
+						return;
+					}
+
+					return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__components_Cover__["a" /* default */], { key: album.id, data: album });
+				});
 			}
 
 			return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -21530,20 +21500,13 @@ var Layout = function (_React$Component) {
 						'Artister du f\xF6ljer:'
 					),
 					artists,
-					nextButton,
 					loginButton,
 					removeToken
 				),
 				__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
-					{ className: 'current' },
-					currentArtist,
-					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-						'div',
-						{ className: 'covers' },
-						__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1__components_Album__["a" /* default */], { album: this.state.album }),
-						__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__components_Single__["a" /* default */], { single: this.state.single })
-					)
+					{ className: 'covers' },
+					albums
 				)
 			);
 		}
@@ -21604,7 +21567,7 @@ var Album = function (_React$Component) {
 	return Album;
 }(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
 
-/* harmony default export */ __webpack_exports__["a"] = (Album);
+/* unused harmony default export */ var _unused_webpack_default_export = (Album);
 
 /***/ }),
 /* 38 */
@@ -21656,7 +21619,7 @@ var Single = function (_React$Component) {
 	return Single;
 }(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
 
-/* harmony default export */ __webpack_exports__["a"] = (Single);
+/* unused harmony default export */ var _unused_webpack_default_export = (Single);
 
 /***/ }),
 /* 39 */
@@ -22756,6 +22719,60 @@ module.exports = function spread(callback) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+var Cover = function (_React$Component) {
+	_inherits(Cover, _React$Component);
+
+	function Cover() {
+		_classCallCheck(this, Cover);
+
+		return _possibleConstructorReturn(this, (Cover.__proto__ || Object.getPrototypeOf(Cover)).apply(this, arguments));
+	}
+
+	_createClass(Cover, [{
+		key: 'render',
+		value: function render() {
+			if (this.props.data) {
+				return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+					'div',
+					{ className: 'cover' },
+					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('img', {
+						src: this.props.data.images[1].url,
+						alt: this.props.data.artists[0].name + ' - ' + this.props.data.name,
+						title: this.props.data.artists[0].name + ' - ' + this.props.data.name
+					})
+				);
+			}
+
+			return null;
+		}
+	}]);
+
+	return Cover;
+}(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
+
+/* harmony default export */ __webpack_exports__["a"] = (Cover);
 
 /***/ })
 /******/ ]);

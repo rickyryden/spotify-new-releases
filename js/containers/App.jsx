@@ -1,16 +1,17 @@
 import React from 'react';
 
 import Album from '../components/Album';
+import Cover from '../components/Cover';
 import Single from '../components/Single';
 
 export default class Layout extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			album: null,
-			single: null,
+			loading: true,
+			albums: [],
+			singles: [],
 			artists: [],
-			allArtists: [],
 			after: null,
 			currentArtist: null,
 			access_token: null,
@@ -24,20 +25,8 @@ export default class Layout extends React.Component {
 			this.setState({
 				access_token: localStorage.getItem('access_token'),
 			});
-
 			axios.defaults.headers.common.Authorization = 'Bearer ' + localStorage.getItem('access_token');
-
-			axios.get('me/following?limit=50&type=artist')
-				.then((response) => {
-					this.setState({
-						artists: response.data.artists.items,
-						allArtists: this.state.allArtists.concat(response.data.artists.items),
-						after: response.data.artists.cursors.after,
-					});
-				})
-				.catch((error) => {
-					console.log(error);
-				});
+			this.fetchArtists();
 		}
 
 		let hash = window.location.hash;
@@ -49,62 +38,51 @@ export default class Layout extends React.Component {
 
 			if (access_token) {
 				localStorage.setItem('access_token', access_token);
-				axios.defaults.headers.common.Authorization = 'Bearer ' + access_token;
-
-				axios.get('me/following?type=artist')
-					.then((response) => {
-						window.location.href = '/';
-					})
-					.catch((error) => {
-						console.log(error);
-					});
+				window.location.href = '/';
 			}
 		}
 	}
-	nextPage(event) {
-		event.preventDefault();
+	fetchArtists() {
+		let afterCursor = '';
 
-		axios.get('me/following?type=artist&limit=50&after=' + this.state.after)
+		if (this.state.after) {
+			afterCursor = '&after=' + this.state.after;
+		}
+
+		axios.get('me/following?type=artist&limit=50' + afterCursor)
 			.then((response) => {
 				this.setState({
-					artists: response.data.artists.items,
-					allArtists: this.state.allArtists.concat(response.data.artists.items),
+					artists: this.state.artists.concat(response.data.artists.items),
 					after: response.data.artists.cursors.after,
 				});
+
+				// if (response.data.artists.cursors.after) {
+				// 	this.fetchArtists();
+				// } else {
+					this.fetchAlbums();
+				// }
 			})
 			.catch((error) => {
 				console.log(error);
 			});
 	}
-	getLatest(event, artist) {
-		event.preventDefault();
-
-		let artistId = artist.id;
-		let artistName = artist.name;
-
-		this.setState({
-			currentArtist: artistName,
+	fetchAlbums() {
+		let fetchAlbum = (artist) => {
+			axios.get('artists/' + artist.id + '/albums?limit=1&album_type=single')
+				.then((response) => {
+					let albums = this.state.albums;
+					albums.push(response.data.items[0]);
+					this.setState({
+						albums: albums,
+					});
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		}
+		this.state.artists.map((artist) => {
+			fetchAlbum(artist);
 		});
-
-		axios.get('artists/' + artistId + '/albums?limit=1&album_type=album')
-			.then((response) => {
-				this.setState({
-					album: response.data.items[0],
-				});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-
-		axios.get('artists/' + artistId + '/albums?limit=1&album_type=single')
-			.then((response) => {
-				this.setState({
-					single: response.data.items[0],
-				});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
 	}
 	login(event) {
 		event.preventDefault();
@@ -120,29 +98,32 @@ export default class Layout extends React.Component {
 		artists = this.state.artists.map((artist) => {
 			return (
 				<div key={artist.id}>
-					<a href="#" onClick={(event) => this.getLatest(event, artist)}>{artist.name}</a>
+					{artist.name}
 				</div>
 			);
 		});
-
-		let currentArtist = null;
-		if (this.state.currentArtist) {
-			currentArtist = <h1>{this.state.currentArtist}</h1>;
-		}
 
 		let loginButton = null;
 		if ( ! this.state.access_token) {
 			loginButton = <div><a href="#" onClick={(event) => this.login(event)}>Logga in</a></div>;
 		}
 
-		let nextButton = null;
-		if (this.state.access_token) {
-			nextButton = <a href="#" onClick={(event) => this.nextPage(event)}>Nästa sida »</a>
-		}
-
 		let removeToken = null;
 		if (this.state.access_token) {
-			removeToken = <div><a href="#" onClick={(event) => this.removeToken(event)}>Ta bort token</a></div>;
+			removeToken = <div><br /><br /><a href="#" onClick={(event) => this.removeToken(event)}>Ta bort token</a></div>;
+		}
+
+		let albums = 'Laddar...';
+		if (this.state.albums.length === this.state.artists.length) {
+			albums = this.state.albums.map((album) => {
+				if ( ! album) {
+					return;
+				}
+
+				return (
+					<Cover key={album.id} data={album} />
+				);
+			});
 		}
 
 		return (
@@ -150,17 +131,11 @@ export default class Layout extends React.Component {
 				<div className="list">
 					<strong>Artister du följer:</strong>
 					{artists}
-					{nextButton}
 					{loginButton}
 					{removeToken}
 				</div>
-				<div className="current">
-					{currentArtist}
-
-					<div className="covers">
-						<Album album={this.state.album} />
-						<Single single={this.state.single} />
-					</div>
+				<div className="covers">
+					{albums}
 				</div>
 			</div>
 		);

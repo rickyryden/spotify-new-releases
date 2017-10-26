@@ -193,22 +193,11 @@ body a {
   margin-bottom: 10px;
 }
 
-.current {
+.covers {
   -webkit-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
   padding: 50px;
-}
-
-.current h1 {
-  margin: 0 0 30px;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
-  font-size: 30px;
-}
-
-.current .covers {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -216,23 +205,16 @@ body a {
       flex-wrap: wrap;
 }
 
-.current .covers > div {
+.cover {
   -webkit-box-flex: 0;
-      -ms-flex: 0 0 300px;
-          flex: 0 0 300px;
-  color: #ccc;
-  margin-right: 50px;
+      -ms-flex: 0 0 25%;
+          flex: 0 0 25%;
+  padding: 5px;
 }
 
-.current .covers > div strong {
-  color: #000;
+.cover img {
   display: block;
-  font-size: 18px;
-  margin-top: 10px;
-}
-
-.current .covers > div img {
-  display: block;
-  margin-top: 10px;
+  max-width: 100%;
+  height: auto;
 }
 
