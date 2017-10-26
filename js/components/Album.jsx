@@ -10,8 +10,8 @@ export default class Album extends React.Component {
 					<strong>{this.props.album.name}</strong>
 				</div>
 			);
-		} else {
-			return null;
 		}
+
+		return null;
 	}
 }

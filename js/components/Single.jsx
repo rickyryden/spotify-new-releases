@@ -10,8 +10,8 @@ export default class Single extends React.Component {
 					<strong>{this.props.single.name}</strong>
 				</div>
 			);
-		} else {
-			return null;
 		}
+
+		return null;
 	}
 }
