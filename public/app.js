@@ -21372,7 +21372,7 @@ var Layout = function (_React$Component) {
 			var hash = window.location.hash;
 
 			if (hash) {
-				var values = hash.split("&");
+				var values = hash.split('&');
 				var access_token = values[0];
 				access_token = access_token.replace('#access_token=', '');
 
@@ -21595,9 +21595,9 @@ var Album = function (_React$Component) {
 						this.props.album.name
 					)
 				);
-			} else {
-				return null;
 			}
+
+			return null;
 		}
 	}]);
 
@@ -21647,9 +21647,9 @@ var Single = function (_React$Component) {
 						this.props.single.name
 					)
 				);
-			} else {
-				return null;
 			}
+
+			return null;
 		}
 	}]);
 
