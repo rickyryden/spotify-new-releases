@@ -21358,7 +21358,7 @@ var Layout = function (_React$Component) {
 
 				axios.defaults.headers.common.Authorization = 'Bearer ' + localStorage.getItem('access_token');
 
-				axios.get('me/following?type=artist').then(function (response) {
+				axios.get('me/following?limit=50&type=artist').then(function (response) {
 					_this2.setState({
 						artists: response.data.artists.items,
 						allArtists: _this2.state.allArtists.concat(response.data.artists.items),
@@ -21395,7 +21395,7 @@ var Layout = function (_React$Component) {
 
 			event.preventDefault();
 
-			axios.get('me/following?type=artist&after=' + this.state.after).then(function (response) {
+			axios.get('me/following?type=artist&limit=50&after=' + this.state.after).then(function (response) {
 				_this3.setState({
 					artists: response.data.artists.items,
 					allArtists: _this3.state.allArtists.concat(response.data.artists.items),

@@ -27,7 +27,7 @@ export default class Layout extends React.Component {
 
 			axios.defaults.headers.common.Authorization = 'Bearer ' + localStorage.getItem('access_token');
 
-			axios.get('me/following?type=artist')
+			axios.get('me/following?limit=50&type=artist')
 				.then((response) => {
 					this.setState({
 						artists: response.data.artists.items,
@@ -64,7 +64,7 @@ export default class Layout extends React.Component {
 	nextPage(event) {
 		event.preventDefault();
 
-		axios.get('me/following?type=artist&after=' + this.state.after)
+		axios.get('me/following?type=artist&limit=50&after=' + this.state.after)
 			.then((response) => {
 				this.setState({
 					artists: response.data.artists.items,
