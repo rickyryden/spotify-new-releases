@@ -43,7 +43,7 @@ export default class Layout extends React.Component {
 		let hash = window.location.hash;
 
 		if (hash) {
-			let values = hash.split("&");
+			let values = hash.split('&');
 			let access_token = values[0];
 			access_token = access_token.replace('#access_token=', '');
 
