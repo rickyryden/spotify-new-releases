@@ -21343,7 +21343,8 @@ var Layout = function (_React$Component) {
 			access_token: null,
 			client_id: '88e7f2f559d94ecbb17f94a5a8559f4c',
 			redirect_uri: window.location.href,
-			scopes: 'user-follow-read'
+			scopes: 'user-follow-read',
+			loopedArtists: 0
 		};
 		return _this;
 	}
@@ -21389,11 +21390,11 @@ var Layout = function (_React$Component) {
 					after: response.data.artists.cursors.after
 				});
 
-				// if (response.data.artists.cursors.after) {
-				// 	this.fetchArtists();
-				// } else {
-				_this2.fetchAlbums();
-				// }
+				if (response.data.artists.cursors.after) {
+					_this2.fetchArtists();
+				} else {
+					_this2.fetchAlbums();
+				}
 			}).catch(function (error) {
 				console.log(error);
 			});
@@ -21403,20 +21404,46 @@ var Layout = function (_React$Component) {
 		value: function fetchAlbums() {
 			var _this3 = this;
 
+			var loopedArtists = 0;
 			var fetchAlbum = function fetchAlbum(artist) {
-				axios.get('artists/' + artist.id + '/albums?limit=1&album_type=single').then(function (response) {
+				axios.get('artists/' + artist.id + '/albums?limit=50&album_type=album,single').then(function (response) {
 					var albums = _this3.state.albums;
-					albums.push(response.data.items[0]);
+
+					var albumFetched = false;
+					var singleFetched = false;
+					response.data.items.map(function (album) {
+						if (!albumFetched && album.album_type === 'album') {
+							albumFetched = true;
+							albums.push(album);
+						}
+
+						if (!singleFetched && album.album_type === 'single') {
+							singleFetched = true;
+							albums.push(album);
+						}
+					});
+
+					loopedArtists++;
 					_this3.setState({
+						loopedArtists: loopedArtists,
 						albums: albums
 					});
 				}).catch(function (error) {
 					console.log(error);
 				});
 			};
-			this.state.artists.map(function (artist) {
-				fetchAlbum(artist);
-			});
+
+			var artists = this.state.artists;
+
+			var _loop = function _loop(i) {
+				setTimeout(function () {
+					fetchAlbum(artists[i]);
+				}, 120 * i);
+			};
+
+			for (var i in artists) {
+				_loop(i);
+			}
 		}
 	}, {
 		key: 'login',
@@ -21436,15 +21463,6 @@ var Layout = function (_React$Component) {
 		value: function render() {
 			var _this4 = this;
 
-			var artists = 'Laddar...';
-			artists = this.state.artists.map(function (artist) {
-				return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-					'div',
-					{ key: artist.id },
-					artist.name
-				);
-			});
-
 			var loginButton = null;
 			if (!this.state.access_token) {
 				loginButton = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
@@ -21455,7 +21473,7 @@ var Layout = function (_React$Component) {
 						{ href: '#', onClick: function onClick(event) {
 								return _this4.login(event);
 							} },
-						'Logga in'
+						'Login'
 					)
 				);
 			}
@@ -21465,20 +21483,18 @@ var Layout = function (_React$Component) {
 				removeToken = __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
 					null,
-					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('br', null),
-					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('br', null),
 					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 						'a',
 						{ href: '#', onClick: function onClick(event) {
 								return _this4.removeToken(event);
 							} },
-						'Ta bort token'
+						'Remove token'
 					)
 				);
 			}
 
-			var albums = 'Laddar...';
-			if (this.state.albums.length === this.state.artists.length) {
+			var albums = 'Loading...';
+			if (this.state.loopedArtists == this.state.artists.length) {
 				albums = this.state.albums.map(function (album) {
 					if (!album) {
 						return;
@@ -21493,13 +21509,13 @@ var Layout = function (_React$Component) {
 				{ className: 'flex' },
 				__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
 					'div',
-					{ className: 'list' },
+					{ className: 'navigation' },
 					__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-						'strong',
+						'div',
 						null,
-						'Artister du f\xF6ljer:'
+						'Fetching albums: ',
+						this.state.loopedArtists + '/' + this.state.artists.length
 					),
-					artists,
 					loginButton,
 					removeToken
 				),

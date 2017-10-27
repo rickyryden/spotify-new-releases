@@ -18,6 +18,7 @@ export default class Layout extends React.Component {
 			client_id: '88e7f2f559d94ecbb17f94a5a8559f4c',
 			redirect_uri: window.location.href,
 			scopes: 'user-follow-read',
+			loopedArtists: 0,
 		};
 	}
 	componentWillMount() {
@@ -56,23 +57,40 @@ export default class Layout extends React.Component {
 					after: response.data.artists.cursors.after,
 				});
 
-				// if (response.data.artists.cursors.after) {
-				// 	this.fetchArtists();
-				// } else {
+				if (response.data.artists.cursors.after) {
+					this.fetchArtists();
+				} else {
 					this.fetchAlbums();
-				// }
+				}
 			})
 			.catch((error) => {
 				console.log(error);
 			});
 	}
 	fetchAlbums() {
+		let loopedArtists = 0;
 		let fetchAlbum = (artist) => {
-			axios.get('artists/' + artist.id + '/albums?limit=1&album_type=single')
+			axios.get('artists/' + artist.id + '/albums?limit=50&album_type=album,single')
 				.then((response) => {
 					let albums = this.state.albums;
-					albums.push(response.data.items[0]);
+
+					let albumFetched = false;
+					let singleFetched = false;
+					response.data.items.map((album) => {
+						if ( ! albumFetched && album.album_type === 'album') {
+							albumFetched = true;
+							albums.push(album);
+						}
+
+						if ( ! singleFetched && album.album_type === 'single') {
+							singleFetched = true;
+							albums.push(album);
+						}
+					});
+
+					loopedArtists++;
 					this.setState({
+						loopedArtists: loopedArtists,
 						albums: albums,
 					});
 				})
@@ -80,9 +98,13 @@ export default class Layout extends React.Component {
 					console.log(error);
 				});
 		}
-		this.state.artists.map((artist) => {
-			fetchAlbum(artist);
-		});
+
+		let artists = this.state.artists;
+		for(let i in artists) {
+			setTimeout(() => {
+				fetchAlbum(artists[i]);
+			}, 120 * i);
+		}
 	}
 	login(event) {
 		event.preventDefault();
@@ -94,27 +116,18 @@ export default class Layout extends React.Component {
 		window.location.href = '/';
 	}
 	render() {
-		let artists = 'Laddar...';
-		artists = this.state.artists.map((artist) => {
-			return (
-				<div key={artist.id}>
-					{artist.name}
-				</div>
-			);
-		});
-
 		let loginButton = null;
 		if ( ! this.state.access_token) {
-			loginButton = <div><a href="#" onClick={(event) => this.login(event)}>Logga in</a></div>;
+			loginButton = <div><a href="#" onClick={(event) => this.login(event)}>Login</a></div>;
 		}
 
 		let removeToken = null;
 		if (this.state.access_token) {
-			removeToken = <div><br /><br /><a href="#" onClick={(event) => this.removeToken(event)}>Ta bort token</a></div>;
+			removeToken = <div><a href="#" onClick={(event) => this.removeToken(event)}>Remove token</a></div>;
 		}
 
-		let albums = 'Laddar...';
-		if (this.state.albums.length === this.state.artists.length) {
+		let albums = 'Loading...';
+		if (this.state.loopedArtists == this.state.artists.length) {
 			albums = this.state.albums.map((album) => {
 				if ( ! album) {
 					return;
@@ -128,9 +141,8 @@ export default class Layout extends React.Component {
 
 		return (
 			<div className="flex">
-				<div className="list">
-					<strong>Artister du följer:</strong>
-					{artists}
+				<div className="navigation">
+					<div>Fetching albums: {this.state.loopedArtists + '/' + this.state.artists.length}</div>
 					{loginButton}
 					{removeToken}
 				</div>

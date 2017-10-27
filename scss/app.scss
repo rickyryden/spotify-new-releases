@@ -8,13 +8,15 @@ body {
 
 .flex {
 	display: flex;
-	flex-wrap: nowrap;
+	flex-wrap: wrap;
 }
 
-.list {
-	flex: 0 0 550px;
-	padding: 50px;
-	border-right: 2px solid #eee;
+.navigation {
+	flex: 0 0 100%;
+	padding: 30px;
+	border-bottom: 2px solid #eee;
+	display: flex;
+	justify-content: space-between;
 
 	strong {
 		display: block;
@@ -33,15 +35,16 @@ body {
 }
 
 .covers {
-	flex: 1;
-	padding: 50px;
+	flex: 0 0 100%;
+	padding: 30px;
 	display: flex;
 	flex-wrap: wrap;
+	align-content: flex-start;
 }
 
 .cover {
 	display: block;
-	flex: 0 0 20%;
+	flex: 0 0 12.5%;
 	padding: 5px;
 
 	img {
