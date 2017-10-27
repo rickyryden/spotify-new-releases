@@ -162,15 +162,6 @@ body {
   font-size: 16px;
 }
 
-body a {
-  display: inline-block;
-  margin: 0 0 10px;
-  line-height: 1.2;
-  text-decoration: none;
-  border-bottom: 1px solid #ccc;
-  color: #333;
-}
-
 .flex {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -193,6 +184,15 @@ body a {
   margin-bottom: 10px;
 }
 
+.list a {
+  display: inline-block;
+  margin: 0 0 10px;
+  line-height: 1.2;
+  text-decoration: none;
+  border-bottom: 1px solid #ccc;
+  color: #333;
+}
+
 .covers {
   -webkit-box-flex: 1;
       -ms-flex: 1;
@@ -206,15 +206,16 @@ body a {
 }
 
 .cover {
+  display: block;
   -webkit-box-flex: 0;
-      -ms-flex: 0 0 25%;
-          flex: 0 0 25%;
+      -ms-flex: 0 0 20%;
+          flex: 0 0 20%;
   padding: 5px;
 }
 
 .cover img {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 
