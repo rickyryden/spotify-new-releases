@@ -22403,6 +22403,8 @@ module.exports = getActiveElement;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_Album__ = __webpack_require__(148);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_Cover__ = __webpack_require__(149);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__components_Single__ = __webpack_require__(150);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__components_Track__ = __webpack_require__(177);
+
 
 
 
@@ -22437,7 +22439,7 @@ var Layout = function (_React$Component) {
 			redirect_uri: window.location.href,
 			scopes: 'user-follow-read',
 			loopedArtists: 0,
-			songs: []
+			tracks: []
 		};
 		return _this;
 	}
@@ -22496,15 +22498,29 @@ var Layout = function (_React$Component) {
 			var _ref = __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_asyncToGenerator___default()( /*#__PURE__*/__WEBPACK_IMPORTED_MODULE_0_babel_runtime_regenerator___default.a.mark(function _callee() {
 				var _this3 = this;
 
-				var loopedArtists, fetchAndSaveAlbumData, fetchAlbum, artists, i;
+				var loopedArtists, fetchAndSaveTracks, fetchAndSaveAlbumData, saveAlbumData, fetchAlbum, artists, i;
 				return __WEBPACK_IMPORTED_MODULE_0_babel_runtime_regenerator___default.a.wrap(function _callee$(_context) {
 					while (1) {
 						switch (_context.prev = _context.next) {
 							case 0:
 								loopedArtists = 0;
 
-								fetchAndSaveAlbumData = function fetchAndSaveAlbumData(albumId) {
+								fetchAndSaveTracks = function fetchAndSaveTracks(albumId) {
 									axios.get('albums/' + albumId + '/tracks').then(function (response) {
+										var tracks = _this3.state.tracks;
+										response.data.items.map(function (track) {
+											tracks.push(track);
+										});
+										_this3.setState({
+											tracks: tracks
+										});
+									}).catch(function (error) {
+										console.log(error);
+									});
+								};
+
+								fetchAndSaveAlbumData = function fetchAndSaveAlbumData(albumId) {
+									axios.get('albums/' + albumId).then(function (response) {
 										var albums = _this3.state.albums;
 										albums.push(response.data);
 										_this3.setState({
@@ -22515,6 +22531,14 @@ var Layout = function (_React$Component) {
 									});
 								};
 
+								saveAlbumData = function saveAlbumData(album) {
+									var albums = _this3.state.albums;
+									albums.push(album);
+									_this3.setState({
+										albums: albums
+									});
+								};
+
 								fetchAlbum = function fetchAlbum(artist) {
 									axios.get('artists/' + artist.id + '/albums?limit=50&album_type=album,single').then(function (response) {
 										var albumFetched = false;
@@ -22522,12 +22546,16 @@ var Layout = function (_React$Component) {
 										response.data.items.map(function (album) {
 											if (!albumFetched && album.album_type === 'album') {
 												albumFetched = true;
-												fetchAndSaveAlbumData(album.id);
+												fetchAndSaveTracks(album.id);
+												saveAlbumData(album);
+												// fetchAndSaveAlbumData(album.id);
 											}
 
 											if (!singleFetched && album.album_type === 'single') {
 												singleFetched = true;
-												fetchAndSaveAlbumData(album.id);
+												fetchAndSaveTracks(album.id);
+												saveAlbumData(album);
+												// fetchAndSaveAlbumData(album.id);
 											}
 										});
 
@@ -22543,25 +22571,25 @@ var Layout = function (_React$Component) {
 								artists = this.state.artists;
 								_context.t0 = __WEBPACK_IMPORTED_MODULE_0_babel_runtime_regenerator___default.a.keys(artists);
 
-							case 5:
+							case 7:
 								if ((_context.t1 = _context.t0()).done) {
-									_context.next = 13;
+									_context.next = 15;
 									break;
 								}
 
 								i = _context.t1.value;
-								_context.next = 9;
+								_context.next = 11;
 								return fetchAlbum(artists[i]);
 
-							case 9:
-								_context.next = 11;
+							case 11:
+								_context.next = 13;
 								return __WEBPACK_IMPORTED_MODULE_8_await_delay___default()(300);
 
-							case 11:
-								_context.next = 5;
+							case 13:
+								_context.next = 7;
 								break;
 
-							case 13:
+							case 15:
 							case 'end':
 								return _context.stop();
 						}
@@ -22632,6 +22660,15 @@ var Layout = function (_React$Component) {
 				return __WEBPACK_IMPORTED_MODULE_7_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_10__components_Cover__["a" /* default */], { key: album.id, data: album });
 			});
 
+			var tracks = 'Loading...';
+			tracks = this.state.tracks.map(function (track) {
+				if (!track) {
+					return;
+				}
+
+				return __WEBPACK_IMPORTED_MODULE_7_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_12__components_Track__["a" /* default */], { key: track.id, data: track });
+			});
+
 			var fetchButton = null;
 			if (this.state.access_token) {
 				fetchButton = __WEBPACK_IMPORTED_MODULE_7_react___default.a.createElement(
@@ -22662,6 +22699,11 @@ var Layout = function (_React$Component) {
 					fetchButton,
 					loginButton,
 					removeToken
+				),
+				__WEBPACK_IMPORTED_MODULE_7_react___default.a.createElement(
+					'div',
+					{ className: 'tracks' },
+					tracks
 				),
 				__WEBPACK_IMPORTED_MODULE_7_react___default.a.createElement(
 					'div',
@@ -26108,6 +26150,65 @@ module.exports = function spread(callback) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 173 */,
+/* 174 */,
+/* 175 */,
+/* 176 */,
+/* 177 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_get_prototype_of__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_get_prototype_of___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_get_prototype_of__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_classCallCheck__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_classCallCheck___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_classCallCheck__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_babel_runtime_helpers_possibleConstructorReturn__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_babel_runtime_helpers_possibleConstructorReturn___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_babel_runtime_helpers_possibleConstructorReturn__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_babel_runtime_helpers_inherits__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_babel_runtime_helpers_inherits___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_babel_runtime_helpers_inherits__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_react__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_react__);
+
+
+
+
+
+
+
+var Track = function (_React$Component) {
+	__WEBPACK_IMPORTED_MODULE_4_babel_runtime_helpers_inherits___default()(Track, _React$Component);
+
+	function Track() {
+		__WEBPACK_IMPORTED_MODULE_1_babel_runtime_helpers_classCallCheck___default()(this, Track);
+
+		return __WEBPACK_IMPORTED_MODULE_3_babel_runtime_helpers_possibleConstructorReturn___default()(this, (Track.__proto__ || __WEBPACK_IMPORTED_MODULE_0_babel_runtime_core_js_object_get_prototype_of___default()(Track)).apply(this, arguments));
+	}
+
+	__WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_createClass___default()(Track, [{
+		key: "render",
+		value: function render() {
+			if (this.props.data) {
+				return __WEBPACK_IMPORTED_MODULE_5_react___default.a.createElement(
+					"a",
+					{ href: this.props.data.uri, className: "track" },
+					this.props.data.artists[0].name,
+					" - ",
+					this.props.data.name
+				);
+			}
+
+			return null;
+		}
+	}]);
+
+	return Track;
+}(__WEBPACK_IMPORTED_MODULE_5_react___default.a.Component);
+
+/* harmony default export */ __webpack_exports__["a"] = (Track);
 
 /***/ })
 /******/ ]);

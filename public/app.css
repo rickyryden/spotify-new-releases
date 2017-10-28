@@ -201,8 +201,8 @@ body {
 
 .covers {
   -webkit-box-flex: 0;
-      -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
+      -ms-flex: 0 0 50%;
+          flex: 0 0 50%;
   padding: 30px;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -216,8 +216,8 @@ body {
 .cover {
   display: block;
   -webkit-box-flex: 0;
-      -ms-flex: 0 0 12.5%;
-          flex: 0 0 12.5%;
+      -ms-flex: 0 0 33%;
+          flex: 0 0 33%;
   padding: 5px;
 }
 
@@ -225,5 +225,27 @@ body {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.tracks {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 50%;
+          flex: 0 0 50%;
+  padding: 30px;
+  border-right: 2px solid #eee;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+.track {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 50%;
+          flex: 0 0 50%;
+  display: block;
+  color: #333;
+  padding: 10px;
 }
 

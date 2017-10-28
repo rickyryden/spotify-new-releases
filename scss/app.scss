@@ -35,7 +35,7 @@ body {
 }
 
 .covers {
-	flex: 0 0 100%;
+	flex: 0 0 50%;
 	padding: 30px;
 	display: flex;
 	flex-wrap: wrap;
@@ -44,7 +44,7 @@ body {
 
 .cover {
 	display: block;
-	flex: 0 0 12.5%;
+	flex: 0 0 33%;
 	padding: 5px;
 
 	img {
@@ -52,4 +52,19 @@ body {
 		width: 100%;
 		height: auto;
 	}
+}
+
+.tracks {
+	flex: 0 0 50%;
+	padding: 30px;
+	border-right: 2px solid #eee;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.track {
+	flex: 0 0 50%;
+	display: block;
+	color: #333;
+	padding: 10px;
 }
