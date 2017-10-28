@@ -1,4 +1,5 @@
 import React from 'react';
+import delay from 'await-delay';
 
 import Album from '../components/Album';
 import Cover from '../components/Cover';
@@ -19,6 +20,7 @@ export default class Layout extends React.Component {
 			redirect_uri: window.location.href,
 			scopes: 'user-follow-read',
 			loopedArtists: 0,
+			songs: [],
 		};
 	}
 	componentWillMount() {
@@ -59,38 +61,21 @@ export default class Layout extends React.Component {
 
 				if (response.data.artists.cursors.after) {
 					this.fetchArtists();
-				} else {
-					this.fetchAlbums();
 				}
 			})
 			.catch((error) => {
 				console.log(error);
 			});
 	}
-	fetchAlbums() {
+	async fetchAlbums() {
 		let loopedArtists = 0;
-		let fetchAlbum = (artist) => {
-			axios.get('artists/' + artist.id + '/albums?limit=50&album_type=album,single')
+
+		let fetchAndSaveAlbumData = (albumId) => {
+			axios.get('albums/' + albumId + '/tracks')
 				.then((response) => {
 					let albums = this.state.albums;
-
-					let albumFetched = false;
-					let singleFetched = false;
-					response.data.items.map((album) => {
-						if ( ! albumFetched && album.album_type === 'album') {
-							albumFetched = true;
-							albums.push(album);
-						}
-
-						if ( ! singleFetched && album.album_type === 'single') {
-							singleFetched = true;
-							albums.push(album);
-						}
-					});
-
-					loopedArtists++;
+					albums.push(response.data);
 					this.setState({
-						loopedArtists: loopedArtists,
 						albums: albums,
 					});
 				})
@@ -99,11 +84,37 @@ export default class Layout extends React.Component {
 				});
 		}
 
+		let fetchAlbum = (artist) => {
+			axios.get('artists/' + artist.id + '/albums?limit=50&album_type=album,single')
+				.then((response) => {
+					let albumFetched = false;
+					let singleFetched = false;
+					response.data.items.map((album) => {
+						if ( ! albumFetched && album.album_type === 'album') {
+							albumFetched = true;
+							fetchAndSaveAlbumData(album.id);
+						}
+
+						if ( ! singleFetched && album.album_type === 'single') {
+							singleFetched = true;
+							fetchAndSaveAlbumData(album.id);
+						}
+					});
+
+					loopedArtists++;
+					this.setState({
+						loopedArtists: loopedArtists,
+					});
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		}
+
 		let artists = this.state.artists;
-		for(let i in artists) {
-			setTimeout(() => {
-				fetchAlbum(artists[i]);
-			}, 120 * i);
+		for (let i in artists) {
+			await fetchAlbum(artists[i]);
+			await delay(300);
 		}
 	}
 	login(event) {
@@ -127,22 +138,26 @@ export default class Layout extends React.Component {
 		}
 
 		let albums = 'Loading...';
-		if (this.state.loopedArtists == this.state.artists.length) {
-			albums = this.state.albums.map((album) => {
-				if ( ! album) {
-					return;
-				}
+		albums = this.state.albums.map((album) => {
+			if ( ! album) {
+				return;
+			}
 
-				return (
-					<Cover key={album.id} data={album} />
-				);
-			});
+			return (
+				<Cover key={album.id} data={album} />
+			);
+		});
+
+		let fetchButton = null;
+		if (this.state.access_token) {
+			fetchButton = <div><a href="#" onClick={(event) => { event.preventDefault(); this.fetchAlbums(); }}>Fetch albums</a></div>;
 		}
 
 		return (
 			<div className="flex">
 				<div className="navigation">
-					<div>Fetching albums: {this.state.loopedArtists + '/' + this.state.artists.length}</div>
+					<div>Fetched albums: {this.state.loopedArtists + '/' + this.state.artists.length}</div>
+					{fetchButton}
 					{loginButton}
 					{removeToken}
 				</div>
