@@ -1,10 +1,9 @@
 import React from 'react';
 import delay from 'await-delay';
 
-import Album from '../components/Album';
+// import Album from '../components/Album';
 import Cover from '../components/Cover';
-import Single from '../components/Single';
-import Track from '../components/Track';
+// import Single from '../components/Single';
 
 export default class Layout extends React.Component {
 	constructor(props) {
@@ -21,7 +20,6 @@ export default class Layout extends React.Component {
 			redirect_uri: window.location.href,
 			scopes: 'user-follow-read',
 			loopedArtists: 0,
-			tracks: [],
 		};
 	}
 	componentWillMount() {
@@ -71,22 +69,6 @@ export default class Layout extends React.Component {
 	async fetchAlbums() {
 		let loopedArtists = 0;
 
-		let fetchAndSaveTracks = (albumId) => {
-			axios.get('albums/' + albumId + '/tracks')
-				.then((response) => {
-					let tracks = this.state.tracks;
-					response.data.items.map((track) => {
-						tracks.push(track);
-					});
-					this.setState({
-						tracks: tracks,
-					});
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-		}
-
 		let fetchAndSaveAlbumData = (albumId) => {
 			axios.get('albums/' + albumId)
 				.then((response) => {
@@ -117,16 +99,12 @@ export default class Layout extends React.Component {
 					response.data.items.map((album) => {
 						if ( ! albumFetched && album.album_type === 'album') {
 							albumFetched = true;
-							fetchAndSaveTracks(album.id);
 							saveAlbumData(album);
-							// fetchAndSaveAlbumData(album.id);
 						}
 
 						if ( ! singleFetched && album.album_type === 'single') {
 							singleFetched = true;
-							fetchAndSaveTracks(album.id);
 							saveAlbumData(album);
-							// fetchAndSaveAlbumData(album.id);
 						}
 					});
 
@@ -177,17 +155,6 @@ export default class Layout extends React.Component {
 			);
 		});
 
-		let tracks = 'Loading...';
-		tracks = this.state.tracks.map((track) => {
-			if ( ! track) {
-				return;
-			}
-
-			return (
-				<Track key={track.id} data={track} />
-			);
-		});
-
 		let fetchButton = null;
 		if (this.state.access_token) {
 			fetchButton = <div><a href="#" onClick={(event) => { event.preventDefault(); this.fetchAlbums(); }}>Fetch albums</a></div>;
@@ -200,9 +167,6 @@ export default class Layout extends React.Component {
 					{fetchButton}
 					{loginButton}
 					{removeToken}
-				</div>
-				<div className="tracks">
-					{tracks}
 				</div>
 				<div className="covers">
 					{albums}
